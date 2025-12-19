@@ -1,0 +1,23 @@
+{
+  "name": "bookstore",
+  "version": "1.0.0",
+  "description": "Full-stack Bookstore Application",
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && npm run dev",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "bookstore",
+    "react",
+    "express",
+    "fullstack"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

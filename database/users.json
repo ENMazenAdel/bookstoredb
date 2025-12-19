@@ -1,0 +1,22 @@
+[
+    {
+        "id": "1",
+        "username": "admin",
+        "password": "admin",
+        "email": "admin@bookstore.com",
+        "firstName": "Admin",
+        "lastName": "User",
+        "role": "admin"
+    },
+    {
+        "id": "2",
+        "username": "john_doe",
+        "password": "password",
+        "email": "john@example.com",
+        "firstName": "John",
+        "lastName": "Doe",
+        "role": "customer",
+        "phone": "555-1234",
+        "shippingAddress": "123 Main St, City, ST 12345"
+    }
+]

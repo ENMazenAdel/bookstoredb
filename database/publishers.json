@@ -1,0 +1,62 @@
+[
+    {
+        "id": "1",
+        "name": "Addison-Wesley",
+        "address": "75 Arlington Street, Boston, MA",
+        "phone": "617-848-6000"
+    },
+    {
+        "id": "2",
+        "name": "HarperCollins",
+        "address": "195 Broadway, New York, NY",
+        "phone": "212-207-7000"
+    },
+    {
+        "id": "3",
+        "name": "W.W. Norton",
+        "address": "500 Fifth Avenue, New York, NY",
+        "phone": "212-354-5500"
+    },
+    {
+        "id": "4",
+        "name": "Wiley",
+        "address": "111 River Street, Hoboken, NJ",
+        "phone": "201-748-6000"
+    },
+    {
+        "id": "5",
+        "name": "Knopf",
+        "address": "1745 Broadway, New York, NY",
+        "phone": "212-782-9000"
+    },
+    {
+        "id": "6",
+        "name": "Broadway Books",
+        "address": "1745 Broadway, New York, NY",
+        "phone": "212-782-9000"
+    },
+    {
+        "id": "7",
+        "name": "Phaidon Press",
+        "address": "65 Bleecker Street, New York, NY",
+        "phone": "212-652-5400"
+    },
+    {
+        "id": "8",
+        "name": "Harper",
+        "address": "195 Broadway, New York, NY",
+        "phone": "212-207-7000"
+    },
+    {
+        "id": "9",
+        "name": "Oxford University Press",
+        "address": "198 Madison Avenue, New York, NY",
+        "phone": "212-726-6000"
+    },
+    {
+        "id": "10",
+        "name": "MIT Press",
+        "address": "1 Rogers Street, Cambridge, MA",
+        "phone": "617-253-5646"
+    }
+]

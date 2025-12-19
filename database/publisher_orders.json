@@ -1,0 +1,29 @@
+[
+    {
+        "id": "PO-001",
+        "bookIsbn": "978-0-321-12521-7",
+        "bookTitle": "Introduction to Algorithms",
+        "publisher": "MIT Press",
+        "quantity": 20,
+        "orderDate": "2025-12-15",
+        "status": "Pending"
+    },
+    {
+        "id": "PO-002",
+        "bookIsbn": "978-0-07-352332-7",
+        "bookTitle": "Physical Geography",
+        "publisher": "Wiley",
+        "quantity": 15,
+        "orderDate": "2025-12-10",
+        "status": "Confirmed"
+    },
+    {
+        "id": "PO-003",
+        "bookIsbn": "978-0-13-468599-1",
+        "bookTitle": "The Art of Computer Programming",
+        "publisher": "Addison-Wesley",
+        "quantity": 10,
+        "orderDate": "2025-12-05",
+        "status": "Confirmed"
+    }
+]
