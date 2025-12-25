@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
@@ -27,7 +33,11 @@ jobs:
           cd frontend
           npm run build
 
+      - name: Copy 404.html for SPA routing
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: frontend/dist
+          branch: gh-pages

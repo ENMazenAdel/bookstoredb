@@ -16,11 +16,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
 
+// Get the base URL for GitHub Pages deployment
+const basename = import.meta.env.BASE_URL;
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
+        <Router basename={basename}>
           <div className="d-flex flex-column min-vh-100">
             <Navbar />
             <main className="flex-grow-1">
