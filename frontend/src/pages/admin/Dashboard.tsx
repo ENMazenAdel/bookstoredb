@@ -1,33 +1,102 @@
+/**
+ * ============================================================================
+ * ADMIN DASHBOARD PAGE
+ * ============================================================================
+ * 
+ * Main dashboard for administrators displaying key business metrics.
+ * This is the landing page for admin users after login.
+ * 
+ * DISPLAYED METRICS:
+ * - Total Books: Count of all books in inventory
+ * - Monthly Sales: Total sales revenue for the previous month
+ * - Pending Orders: Count of publisher orders awaiting confirmation
+ * - Low Stock Alert: Count of books below their threshold
+ * 
+ * FEATURES:
+ * - Real-time data loading from API
+ * - Quick navigation links to management pages
+ * - Low stock alert list with direct access to order more
+ * - Pending orders list with confirm/cancel actions
+ * 
+ * ACCESS: Admin users only (protected by ProtectedRoute)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and lifecycle management
 import React, { useState, useEffect } from 'react';
+
+// Router for navigation links
 import { Link } from 'react-router-dom';
+
+// Type imports for TypeScript type safety
 import { Book, PublisherOrder } from '../../types';
+
+// API services for fetching dashboard data
 import { booksApi, ordersApi, reportsApi } from '../../services/api';
+
+// Shared UI component for loading state
 import { LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { 
-  FaBook, 
-  FaShoppingCart, 
-  FaExclamationTriangle, 
-  FaDollarSign,
-  FaChartLine 
+  FaBook,               // Books icon
+  FaShoppingCart,       // Orders icon
+  FaExclamationTriangle, // Warning/alert icon
+  FaDollarSign,         // Sales/money icon
+  FaChartLine           // Dashboard/chart icon
 } from 'react-icons/fa';
 
+/**
+ * Dashboard Component
+ * 
+ * Renders the admin dashboard with stats cards and alert lists.
+ * Loads data from multiple APIs in parallel for performance.
+ */
 const Dashboard: React.FC = () => {
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Books data for inventory metrics
   const [books, setBooks] = useState<Book[]>([]);
+  
+  // Publisher orders for pending orders metric
   const [orders, setOrders] = useState<PublisherOrder[]>([]);
+  
+  // Total monthly sales from reports API
   const [totalSales, setTotalSales] = useState(0);
+  
+  // Loading state for initial data fetch
   const [isLoading, setIsLoading] = useState(true);
 
+  // ========================================
+  // DATA LOADING
+  // ========================================
+  
+  /**
+   * Effect: Load dashboard data on component mount
+   */
   useEffect(() => {
     loadDashboardData();
   }, []);
 
+  /**
+   * Loads all dashboard data from multiple APIs in parallel
+   * Uses Promise.all for efficient parallel fetching
+   */
   const loadDashboardData = async () => {
     try {
+      // Fetch all data in parallel for better performance
       const [booksData, ordersData, salesData] = await Promise.all([
-        booksApi.getAll(),
-        ordersApi.getAll(),
-        reportsApi.getMonthlySales()
+        booksApi.getAll(),           // Get all books for inventory count
+        ordersApi.getAll(),          // Get all orders for pending count
+        reportsApi.getMonthlySales() // Get previous month sales
       ]);
+      
+      // Update state with fetched data
       setBooks(booksData);
       setOrders(ordersData);
       setTotalSales(salesData.totalSales);
@@ -38,15 +107,31 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // ========================================
+  // LOADING STATE
+  // ========================================
+  
+  // Show loading spinner while data is being fetched
   if (isLoading) {
     return <LoadingSpinner message="Loading dashboard..." />;
   }
 
+  // ========================================
+  // DERIVED DATA (Computed from state)
+  // ========================================
+  
+  // Books with stock below their threshold - need attention
   const lowStockBooks = books.filter(b => b.quantity < b.threshold);
+  
+  // Orders waiting for admin to confirm or cancel
   const pendingOrders = orders.filter(o => o.status === 'Pending');
 
+  // ========================================
+  // RENDER
+  // ========================================
   return (
     <div className="container-fluid py-4">
+      {/* Page Title */}
       <h2 className="mb-4">
         <FaChartLine className="me-2" />
         Admin Dashboard
@@ -54,6 +139,7 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="row g-4 mb-4">
+        {/* Total Books Card */}
         <div className="col-sm-6 col-xl-3">
           <div className="card bg-primary text-white h-100">
             <div className="card-body">
@@ -73,6 +159,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Monthly Sales Card */}
         <div className="col-sm-6 col-xl-3">
           <div className="card bg-success text-white h-100">
             <div className="card-body">
@@ -92,6 +179,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Pending Orders Card */}
         <div className="col-sm-6 col-xl-3">
           <div className="card bg-warning text-dark h-100">
             <div className="card-body">

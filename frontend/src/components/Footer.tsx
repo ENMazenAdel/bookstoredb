@@ -1,14 +1,58 @@
+/**
+ * @fileoverview Footer Component
+ * 
+ * A comprehensive footer component for the bookstore application featuring:
+ * - Brand section with logo and description
+ * - Social media links
+ * - Quick navigation links
+ * - Book category links with color coding
+ * - Contact information
+ * - Newsletter subscription form
+ * - Copyright notice
+ * 
+ * @component Footer
+ * @module components/Footer
+ * 
+ * @description
+ * The footer uses a dark gradient background (slate colors) and is designed
+ * to be positioned at the bottom of the viewport. It provides users with
+ * easy access to important links, contact information, and category browsing.
+ * 
+ * Features:
+ * - Responsive grid layout (4 columns on large, 2 on medium, 1 on mobile)
+ * - Animated social media icons with hover effects
+ * - Category pills matching the app's color scheme
+ * - Email subscription form with validation styling
+ * - Current year auto-update in copyright
+ * 
+ * @example
+ * // Usage in App.tsx layout
+ * <div className="d-flex flex-column min-vh-100">
+ *   <Navbar />
+ *   <main>{children}</main>
+ *   <Footer />
+ * </div>
+ */
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaGithub, FaBook, FaTwitter, FaFacebook, FaInstagram, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
+/**
+ * Footer functional component.
+ * Renders the site-wide footer with branding, navigation, and contact info.
+ */
 const Footer: React.FC = () => {
+  /**
+   * Category color mapping for consistent styling throughout the app.
+   * These colors match the BookCard component's category badge colors.
+   */
   const categoryColors: { [key: string]: string } = {
-    'Science': '#0ea5e9',
-    'Art': '#f59e0b',
-    'History': '#ef4444',
-    'Religion': '#8b5cf6',
-    'Geography': '#d946ef'
+    'Science': '#0ea5e9',     // Sky blue
+    'Art': '#f59e0b',         // Amber
+    'History': '#ef4444',     // Red
+    'Religion': '#8b5cf6',    // Violet
+    'Geography': '#d946ef'    // Fuchsia
   };
 
   return (

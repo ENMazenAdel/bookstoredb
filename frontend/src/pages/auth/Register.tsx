@@ -1,9 +1,65 @@
+/**
+ * ============================================================================
+ * REGISTRATION PAGE
+ * ============================================================================
+ * 
+ * Authentication page for new user registration.
+ * Allows customers to create new accounts.
+ * 
+ * FEATURES:
+ * 1. Complete registration form with all required fields
+ * 2. Password confirmation and validation
+ * 3. Form validation with error messages
+ * 4. Loading state during registration
+ * 5. Auto-login after successful registration
+ * 
+ * REQUIRED FIELDS:
+ * - First Name
+ * - Last Name
+ * - Username (unique)
+ * - Email
+ * - Password (min 6 characters)
+ * - Confirm Password
+ * - Phone
+ * - Shipping Address
+ * 
+ * VALIDATION RULES:
+ * - Password must be at least 6 characters
+ * - Password and Confirm Password must match
+ * - All fields are required
+ * - Email must be valid format
+ * 
+ * ACCESS: Public (new users only - redirect if logged in)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and state management
 import React, { useState } from 'react';
+
+// Router hooks for navigation
 import { Link, useNavigate } from 'react-router-dom';
+
+// Auth context for registration functionality
 import { useAuth } from '../../context/AuthContext';
+
+// Icons for visual enhancement
 import { FaBook, FaUser, FaLock, FaEnvelope, FaPhone, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa';
 
+/**
+ * Register Component
+ * 
+ * Renders the registration form with all required fields.
+ * Handles validation and account creation.
+ */
 const Register: React.FC = () => {
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Form data state - all registration fields
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -14,25 +70,51 @@ const Register: React.FC = () => {
     phone: '',
     shippingAddress: ''
   });
+  
+  // UI state
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // ========================================
+  // HOOKS AND CONTEXT
+  // ========================================
+  
+  // Auth context for register function
   const { register } = useAuth();
+  
+  // Navigation hook for redirect after registration
   const navigate = useNavigate();
 
+  // ========================================
+  // EVENT HANDLERS
+  // ========================================
+
+  /**
+   * Handles form input changes
+   * Updates the corresponding field in formData
+   * @param e - Change event from input/textarea
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Handles registration form submission
+   * Validates input and creates new account
+   * @param e - Form submit event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    // Validation: Check password confirmation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
+    // Validation: Check password length
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
@@ -41,6 +123,7 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Call register API (excludes confirmPassword)
       await register({
         username: formData.username,
         password: formData.password,
@@ -50,6 +133,7 @@ const Register: React.FC = () => {
         phone: formData.phone,
         shippingAddress: formData.shippingAddress
       });
+      // Redirect to home page after successful registration
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -58,6 +142,11 @@ const Register: React.FC = () => {
     }
   };
 
+  // ========================================
+  // STYLE DEFINITIONS
+  // ========================================
+
+  /** Common style for input fields */
   const inputStyle = {
     backgroundColor: '#f8fafc',
     border: 'none',
@@ -65,12 +154,17 @@ const Register: React.FC = () => {
     padding: '14px 16px'
   };
 
+  /** Style for input group icons */
   const inputGroupStyle = {
     backgroundColor: '#f8fafc',
     border: 'none',
     borderRadius: '12px 0 0 12px',
     color: '#94a3b8'
   };
+
+  // ========================================
+  // RENDER
+  // ========================================
 
   return (
     <div className="min-vh-100 d-flex align-items-center py-5" style={{
@@ -79,6 +173,7 @@ const Register: React.FC = () => {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-7 col-md-9">
+            {/* Logo/Brand Link */}
             <div className="text-center mb-4">
               <Link to="/" className="text-decoration-none d-inline-flex align-items-center">
                 <div style={{
@@ -100,13 +195,16 @@ const Register: React.FC = () => {
               </Link>
             </div>
 
+            {/* Registration Card */}
             <div className="card border-0 shadow-lg" style={{ borderRadius: '24px', overflow: 'hidden' }}>
               <div className="card-body p-5">
+                {/* Header */}
                 <div className="text-center mb-4">
                   <h2 className="fw-bold mb-2" style={{ color: '#1e293b' }}>Create Account</h2>
                   <p style={{ color: '#64748b' }}>Join our bookstore community today</p>
                 </div>
 
+                {/* Error Alert */}
                 {error && (
                   <div className="alert alert-danger border-0 rounded-3" role="alert" style={{
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -116,7 +214,9 @@ const Register: React.FC = () => {
                   </div>
                 )}
 
+                {/* Registration Form */}
                 <form onSubmit={handleSubmit}>
+                  {/* Name Fields - Side by Side */}
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label htmlFor="firstName" className="form-label fw-medium" style={{ color: '#475569' }}>First Name</label>
@@ -146,6 +246,7 @@ const Register: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Username Field with Icon */}
                   <div className="mb-3">
                     <label htmlFor="username" className="form-label fw-medium" style={{ color: '#475569' }}>Username</label>
                     <div className="input-group">
@@ -163,6 +264,7 @@ const Register: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Email Field with Icon */}
                   <div className="mb-3">
                     <label htmlFor="email" className="form-label fw-medium" style={{ color: '#475569' }}>Email</label>
                     <div className="input-group">
@@ -180,6 +282,7 @@ const Register: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Password Fields - Side by Side */}
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label htmlFor="password" className="form-label fw-medium" style={{ color: '#475569' }}>Password</label>

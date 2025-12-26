@@ -1,45 +1,134 @@
+/**
+ * ============================================================================
+ * BROWSE BOOKS PAGE (Customer)
+ * ============================================================================
+ * 
+ * Main page for browsing the bookstore catalog.
+ * Available to all users (customers and admins).
+ * 
+ * FEATURES:
+ * 1. Search books by title, ISBN, or author
+ * 2. Filter by category, author, or publisher
+ * 3. Sort by title, price, or publication year
+ * 4. Toggle between grid and list view
+ * 5. Add to cart functionality (customers only)
+ * 
+ * FILTERING LOGIC:
+ * - All filters work together (AND logic)
+ * - Search query matches title, ISBN, or any author
+ * - Category filter is passed via URL parameter
+ * - Filters are cleared with a single button
+ * 
+ * SORTING OPTIONS:
+ * - By title (alphabetical)
+ * - By price (ascending or descending)
+ * - By year (newest first)
+ * 
+ * VIEW MODES:
+ * - Grid: Shows BookCard components in a responsive grid
+ * - List: Shows detailed horizontal cards with more info
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and state management
 import React, { useState, useEffect } from 'react';
+
+// Router hooks for URL parameters and navigation
 import { useSearchParams, useNavigate } from 'react-router-dom';
+
+// Type imports
 import { Book, BookCategory } from '../../types';
+
+// API service for fetching books
 import { booksApi } from '../../services/api';
+
+// Reusable UI components
 import { BookCard, LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { FaSearch, FaTh, FaList, FaShoppingCart } from 'react-icons/fa';
+
+// Context hooks for authentication and cart
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
+/** Available book categories for filtering */
 const categories: BookCategory[] = ['Science', 'Art', 'Religion', 'History', 'Geography'];
 
+/**
+ * BrowseBooks Component
+ * 
+ * Displays a searchable, filterable catalog of books.
+ * Supports grid and list views with add-to-cart functionality.
+ */
 const BrowseBooks: React.FC = () => {
+  // ========================================
+  // HOOKS AND URL PARAMETERS
+  // ========================================
+  
+  // URL search parameters for deep linking (e.g., ?category=Science)
   const [searchParams, setSearchParams] = useSearchParams();
-  const [books, setBooks] = useState<Book[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [addingToCart, setAddingToCart] = useState<string | null>(null);
-
-  const { user, isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
+  
+  // Navigation hook for redirecting to login
   const navigate = useNavigate();
+  
+  // Auth context for checking if user can add to cart
+  const { user, isAuthenticated } = useAuth();
+  
+  // Cart context for add to cart functionality
+  const { addToCart } = useCart();
 
-  // Filter states
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Book data state
+  const [books, setBooks] = useState<Book[]>([]);                    // All books from API
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);    // Books after filtering
+  
+  // UI state
+  const [isLoading, setIsLoading] = useState(true);                  // Loading indicator
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // Display mode
+  const [addingToCart, setAddingToCart] = useState<string | null>(null); // ISBN being added
+
+  // Filter state - initialized from URL params if present
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [selectedAuthor, setSelectedAuthor] = useState('');
   const [selectedPublisher, setSelectedPublisher] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'price-asc' | 'price-desc' | 'year'>('title');
 
-  // Get unique authors and publishers for filters
+  // Computed values for filter dropdowns
+  // Get unique authors from all books (flattened since authors is an array)
   const uniqueAuthors = [...new Set(books.flatMap(b => b.authors))].sort();
+  // Get unique publishers from all books
   const uniquePublishers = [...new Set(books.map(b => b.publisher))].sort();
 
+  // ========================================
+  // DATA LOADING
+  // ========================================
+
+  /**
+   * Effect: Load all books on component mount
+   */
   useEffect(() => {
     loadBooks();
   }, []);
 
+  /**
+   * Effect: Re-filter books when any filter changes
+   * Depends on all filter state variables
+   */
   useEffect(() => {
     filterAndSortBooks();
   }, [books, searchQuery, selectedCategory, selectedAuthor, selectedPublisher, sortBy]);
 
+  /**
+   * Loads all books from the API
+   */
   const loadBooks = async () => {
     try {
       const data = await booksApi.getAll();
@@ -51,10 +140,18 @@ const BrowseBooks: React.FC = () => {
     }
   };
 
+  // ========================================
+  // FILTERING AND SORTING LOGIC
+  // ========================================
+
+  /**
+   * Applies all filters and sorting to the books array
+   * Called whenever any filter state changes
+   */
   const filterAndSortBooks = () => {
     let result = [...books];
 
-    // Apply filters
+    // Apply search filter - matches title, ISBN, or author name
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(book =>
@@ -64,19 +161,22 @@ const BrowseBooks: React.FC = () => {
       );
     }
 
+    // Apply category filter
     if (selectedCategory) {
       result = result.filter(book => book.category === selectedCategory);
     }
 
+    // Apply author filter
     if (selectedAuthor) {
       result = result.filter(book => book.authors.includes(selectedAuthor));
     }
 
+    // Apply publisher filter
     if (selectedPublisher) {
       result = result.filter(book => book.publisher === selectedPublisher);
     }
 
-    // Apply sorting
+    // Apply sorting based on selected option
     switch (sortBy) {
       case 'title':
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -95,18 +195,25 @@ const BrowseBooks: React.FC = () => {
     setFilteredBooks(result);
   };
 
+  /**
+   * Resets all filters to default values
+   */
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
     setSelectedAuthor('');
     setSelectedPublisher('');
     setSortBy('title');
-    setSearchParams({});
+    setSearchParams({});  // Clear URL parameters
   };
 
-  // Update URL when category changes
+  /**
+   * Handles category change and updates URL
+   * @param category - Selected category or empty string for all
+   */
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
+    // Update URL for deep linking
     if (category) {
       setSearchParams({ category });
     } else {
@@ -114,12 +221,21 @@ const BrowseBooks: React.FC = () => {
     }
   };
 
+  // ========================================
+  // CART HANDLERS
+  // ========================================
+
+  /**
+   * Adds a book to the shopping cart
+   * Redirects to login if user is not authenticated
+   * @param isbn - ISBN of the book to add
+   */
   const handleAddToCart = async (isbn: string) => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-    setAddingToCart(isbn);
+    setAddingToCart(isbn);  // Show loading state on button
     try {
       await addToCart(isbn);
     } catch (error) {
@@ -129,10 +245,16 @@ const BrowseBooks: React.FC = () => {
     }
   };
 
+  // ========================================
+  // RENDER
+  // ========================================
+
+  // Show loading spinner while fetching books
   if (isLoading) {
     return <LoadingSpinner message="Loading books..." />;
   }
 
+  // Color scheme for category badges
   const categoryColors: { [key: string]: { bg: string; color: string } } = {
     'Science': { bg: 'rgba(239, 68, 68, 0.15)', color: '#dc2626' },
     'Art': { bg: 'rgba(245, 158, 11, 0.15)', color: '#d97706' },
@@ -145,7 +267,7 @@ const BrowseBooks: React.FC = () => {
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <div className="container py-5">
         <div className="row">
-          {/* Sidebar Filters */}
+          {/* ========== SIDEBAR FILTERS ========== */}
           <div className="col-lg-3 mb-4">
             <div className="card border-0 shadow-sm" style={{ borderRadius: '20px', overflow: 'hidden' }}>
               <div className="card-header border-0 py-4" style={{

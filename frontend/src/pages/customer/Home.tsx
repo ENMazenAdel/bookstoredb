@@ -1,12 +1,63 @@
+/**
+ * ============================================================================
+ * HOME PAGE (Landing Page)
+ * ============================================================================
+ * 
+ * The main landing page for the bookstore application.
+ * Designed to attract and engage visitors with featured content.
+ * 
+ * SECTIONS:
+ * 
+ * 1. HERO SECTION
+ *    - Welcome message with gradient background
+ *    - Search bar for quick book searches
+ *    - Call-to-action buttons
+ * 
+ * 2. CATEGORIES SECTION
+ *    - Visual cards for each book category
+ *    - Icons and color-coded gradients
+ *    - Links to filtered book views
+ * 
+ * 3. FEATURED BOOKS
+ *    - Displays first 4 books as featured
+ *    - Uses BookCard component
+ *    - Responsive grid layout
+ * 
+ * FEATURES:
+ * - Real-time search filtering
+ * - Category quick links
+ * - Responsive design
+ * - Animated elements
+ * 
+ * ACCESS: Public (no authentication required)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and state management
 import React, { useState, useEffect } from 'react';
+
+// Router component for navigation links
 import { Link } from 'react-router-dom';
+
+// Type imports
 import { Book, BookCategory } from '../../types';
+
+// API service for fetching books
 import { booksApi } from '../../services/api';
+
+// Reusable components
 import { BookCard, LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { FaSearch, FaBook, FaFlask, FaPalette, FaPray, FaLandmark, FaGlobeAmericas } from 'react-icons/fa';
 
+/** Available book categories */
 const categories: BookCategory[] = ['Science', 'Art', 'Religion', 'History', 'Geography'];
 
+/** Icon mapping for each category */
 const categoryIcons: { [key: string]: React.ReactNode } = {
   'Science': <FaFlask size={32} />,
   'Art': <FaPalette size={32} />,
@@ -15,6 +66,7 @@ const categoryIcons: { [key: string]: React.ReactNode } = {
   'Geography': <FaGlobeAmericas size={32} />
 };
 
+/** Color gradients for category cards */
 const categoryColors: { [key: string]: string } = {
   'Science': 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
   'Art': 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -23,21 +75,52 @@ const categoryColors: { [key: string]: string } = {
   'Geography': 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
 };
 
+/**
+ * Home Component
+ * 
+ * Landing page with hero, categories, and featured books sections.
+ */
 const Home: React.FC = () => {
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // All books from API
   const [books, setBooks] = useState<Book[]>([]);
+  
+  // Books filtered by search/category
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  
+  // Loading state
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Search query from hero section
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Selected category filter
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
+  // ========================================
+  // DATA LOADING
+  // ========================================
+
+  /**
+   * Effect: Load all books on component mount
+   */
   useEffect(() => {
     loadBooks();
   }, []);
 
+  /**
+   * Effect: Re-filter books when search or category changes
+   */
   useEffect(() => {
     filterBooks();
   }, [books, searchQuery, selectedCategory]);
 
+  /**
+   * Loads all books from the API
+   */
   const loadBooks = async () => {
     try {
       const data = await booksApi.getAll();
@@ -49,9 +132,18 @@ const Home: React.FC = () => {
     }
   };
 
+  // ========================================
+  // FILTERING LOGIC
+  // ========================================
+
+  /**
+   * Filters books based on search query and selected category
+   * Matches against title, ISBN, authors, and publisher
+   */
   const filterBooks = () => {
     let result = books;
 
+    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(book =>
@@ -62,6 +154,7 @@ const Home: React.FC = () => {
       );
     }
 
+    // Apply category filter
     if (selectedCategory) {
       result = result.filter(book => book.category === selectedCategory);
     }
@@ -69,34 +162,48 @@ const Home: React.FC = () => {
     setFilteredBooks(result);
   };
 
+  /**
+   * Handles search form submission
+   * Triggers filter (already handled by useEffect)
+   */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     filterBooks();
   };
 
+  // Get first 4 books as "featured"
   const featuredBooks = books.slice(0, 4);
 
+  // ========================================
+  // RENDER
+  // ========================================
+
+  // Show loading spinner while fetching
   if (isLoading) {
     return <LoadingSpinner message="Loading books..." />;
   }
 
   return (
     <div>
-      {/* Hero Section */}
+      {/* ========== HERO SECTION ========== */}
       <section className="hero-section text-white py-5" style={{ minHeight: '500px' }}>
         <div className="container position-relative" style={{ zIndex: 2 }}>
           <div className="row align-items-center py-5">
             <div className="col-lg-6">
+              {/* Welcome badge */}
               <span className="badge bg-white text-primary px-3 py-2 mb-3 rounded-pill">
                 <FaBook className="me-2" />
                 Welcome to BookStore
               </span>
+              {/* Hero headline */}
               <h1 className="display-3 fw-bold mb-4" style={{ lineHeight: 1.1 }}>
                 Discover Your Next <span style={{ color: '#fbbf24' }}>Great Read</span>
               </h1>
+              {/* Hero description */}
               <p className="lead mb-4 opacity-90" style={{ fontSize: '1.25rem' }}>
                 Explore our extensive collection of books across Science, Art, History, Religion, and Geography. Find your perfect book today!
               </p>
+              {/* CTA buttons */}
               <div className="d-flex gap-3 flex-wrap">
                 <Link to="/books" className="btn btn-light btn-lg px-4 py-3 rounded-pill fw-semibold">
                   Browse All Books

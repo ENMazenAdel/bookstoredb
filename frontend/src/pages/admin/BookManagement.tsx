@@ -1,40 +1,121 @@
+/**
+ * ============================================================================
+ * BOOK MANAGEMENT PAGE (Admin)
+ * ============================================================================
+ * 
+ * Admin page for managing the book inventory.
+ * Provides full CRUD operations for books in the system.
+ * 
+ * FEATURES:
+ * - View all books with search and filter capabilities
+ * - Add new books to inventory
+ * - Edit existing book details
+ * - Delete books from inventory
+ * - Quick quantity adjustment (increase/decrease stock)
+ * - Low stock highlighting
+ * 
+ * DATABASE TRIGGERS DEMONSTRATED:
+ * - Auto-replenish: When quantity drops below threshold via update,
+ *   system automatically creates a publisher order
+ * - CHECK constraint: Prevents quantity from going negative
+ * 
+ * ACCESS: Admin users only (protected by ProtectedRoute)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and lifecycle management
 import React, { useState, useEffect } from 'react';
+
+// Type imports for TypeScript type safety
 import { Book, BookCategory, BookFormData } from '../../types';
+
+// API services for book and publisher operations
 import { booksApi, publishersApi } from '../../services/api';
+
+// Shared UI component for loading state
 import { LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { FaBook, FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+/**
+ * Available book categories
+ * Must match the BookCategory type defined in types/Book.ts
+ */
 const categories: BookCategory[] = ['Science', 'Art', 'Religion', 'History', 'Geography'];
 
+/**
+ * Empty form data template for resetting the form
+ * Used when opening the modal for adding a new book
+ */
 const emptyFormData: BookFormData = {
   isbn: '',
   title: '',
-  authors: '',
+  authors: '',            // Comma-separated string, converted to array on save
   publisher: '',
   publicationYear: new Date().getFullYear(),
   sellingPrice: 0,
   category: 'Science',
   quantity: 0,
-  threshold: 5
+  threshold: 5            // Default reorder threshold
 };
 
+/**
+ * BookManagement Component
+ * 
+ * Renders the book management interface with:
+ * - Search and filter controls
+ * - Books table with CRUD actions
+ * - Modal form for add/edit operations
+ */
 const BookManagement: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [publishers, setPublishers] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Data state
+  const [books, setBooks] = useState<Book[]>([]);              // All books from API
+  const [publishers, setPublishers] = useState<string[]>([]);  // Publisher names for dropdown
+  
+  // UI state
+  const [isLoading, setIsLoading] = useState(true);            // Initial load state
+  const [showModal, setShowModal] = useState(false);           // Modal visibility
+  const [editingBook, setEditingBook] = useState<Book | null>(null); // Book being edited
+  
+  // Form state
   const [formData, setFormData] = useState<BookFormData>(emptyFormData);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');          // Search text
+  const [filterCategory, setFilterCategory] = useState('');    // Category filter
+  
+  // Feedback state
+  const [error, setError] = useState('');                      // Error message
+  const [success, setSuccess] = useState('');                  // Success message
+  const [isSaving, setIsSaving] = useState(false);            // Form submission state
 
+  // ========================================
+  // DATA LOADING
+  // ========================================
+  
+  /**
+   * Effect: Load initial data on component mount
+   */
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * Loads books and publishers data from APIs
+   * Uses Promise.all for parallel fetching
+   */
   const loadData = async () => {
     try {
       const [booksData, publishersData] = await Promise.all([
@@ -42,6 +123,7 @@ const BookManagement: React.FC = () => {
         publishersApi.getAll()
       ]);
       setBooks(booksData);
+      // Extract publisher names for the dropdown
       setPublishers(publishersData.map(p => p.name));
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -50,22 +132,44 @@ const BookManagement: React.FC = () => {
     }
   };
 
+  // ========================================
+  // FILTERING LOGIC
+  // ========================================
+  
+  /**
+   * Filters books based on search query and category filter
+   * Search matches against: title, ISBN, and authors
+   */
   const filteredBooks = books.filter(book => {
+    // Check if book matches search query
     const matchesSearch = !searchQuery || 
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.isbn.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.authors.some(a => a.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Check if book matches category filter
     const matchesCategory = !filterCategory || book.category === filterCategory;
+    
+    // Book must match both criteria
     return matchesSearch && matchesCategory;
   });
 
+  // ========================================
+  // MODAL HANDLERS
+  // ========================================
+
+  /**
+   * Opens the add/edit modal
+   * @param book - If provided, opens in edit mode; otherwise opens in add mode
+   */
   const handleOpenModal = (book?: Book) => {
     if (book) {
+      // Edit mode: populate form with existing book data
       setEditingBook(book);
       setFormData({
         isbn: book.isbn,
         title: book.title,
-        authors: book.authors.join(', '),
+        authors: book.authors.join(', '),  // Convert array to comma-separated string
         publisher: book.publisher,
         publicationYear: book.publicationYear,
         sellingPrice: book.sellingPrice,
@@ -74,6 +178,7 @@ const BookManagement: React.FC = () => {
         threshold: book.threshold
       });
     } else {
+      // Add mode: reset form to empty state
       setEditingBook(null);
       setFormData(emptyFormData);
     }
@@ -81,6 +186,9 @@ const BookManagement: React.FC = () => {
     setShowModal(true);
   };
 
+  /**
+   * Closes the modal and resets form state
+   */
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingBook(null);
@@ -88,16 +196,29 @@ const BookManagement: React.FC = () => {
     setError('');
   };
 
+  // ========================================
+  // FORM HANDLERS
+  // ========================================
+
+  /**
+   * Handles form input changes
+   * Converts numeric fields to numbers
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
+      // Parse numeric fields, keep others as strings
       [name]: ['publicationYear', 'sellingPrice', 'quantity', 'threshold'].includes(name)
         ? parseFloat(value) || 0
         : value
     }));
   };
 
+  /**
+   * Handles form submission for add/edit operations
+   * Converts authors string to array before saving
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -105,15 +226,18 @@ const BookManagement: React.FC = () => {
 
     try {
       if (editingBook) {
+        // Update existing book
         await booksApi.update(editingBook.isbn, {
           ...formData,
           authors: formData.authors.split(',').map(a => a.trim())
         });
         setSuccess('Book updated successfully!');
       } else {
+        // Add new book
         await booksApi.add(formData);
         setSuccess('Book added successfully!');
       }
+      // Refresh data and close modal
       await loadData();
       handleCloseModal();
     } catch (err) {
@@ -123,6 +247,13 @@ const BookManagement: React.FC = () => {
     }
   };
 
+  // ========================================
+  // ACTION HANDLERS
+  // ========================================
+
+  /**
+   * Handles book deletion with confirmation
+   */
   const handleDelete = async (isbn: string) => {
     if (!confirm('Are you sure you want to delete this book?')) return;
     
@@ -135,14 +266,24 @@ const BookManagement: React.FC = () => {
     }
   };
 
+  /**
+   * Updates book quantity (for quick stock adjustments)
+   * Triggers auto-replenish if quantity drops below threshold
+   * 
+   * @param book - The book to update
+   * @param change - Positive to add stock, negative to reduce (sale)
+   */
   const handleUpdateQuantity = async (book: Book, change: number) => {
     const newQuantity = book.quantity + change;
+    
+    // Validate: cannot have negative stock
     if (newQuantity < 0) {
       setError('Cannot reduce quantity below zero');
       return;
     }
     
     try {
+      // This may trigger auto-replenish if crossing threshold
       await booksApi.update(book.isbn, { quantity: newQuantity });
       setSuccess(`Quantity updated. ${change < 0 ? 'Sale recorded.' : 'Stock added.'}`);
       await loadData();

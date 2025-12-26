@@ -1,38 +1,120 @@
+/**
+ * ============================================================================
+ * LOGIN PAGE
+ * ============================================================================
+ * 
+ * Authentication page for user login.
+ * Provides a form for users to sign in with username and password.
+ * 
+ * FEATURES:
+ * 1. Username and password input fields
+ * 2. Form validation and error handling
+ * 3. Loading state during authentication
+ * 4. Role-based redirect after login:
+ *    - Admin users -> Admin Dashboard
+ *    - Customers -> Previous page or home
+ * 5. Link to registration page
+ * 
+ * REDIRECT LOGIC:
+ * - Uses React Router's location state to remember the intended destination
+ * - Admin users always go to /admin/dashboard
+ * - Other users go to their original destination or home page
+ * 
+ * DEMO CREDENTIALS (for testing):
+ * - Admin: username: admin, password: admin123
+ * - Customer: username: john_doe, password: password123
+ * 
+ * ACCESS: Public (unauthenticated users only - redirect if logged in)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and state management
 import React, { useState } from 'react';
+
+// Router hooks for navigation and location
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+
+// Auth context for login functionality
 import { useAuth } from '../../context/AuthContext';
+
+// Icons for visual enhancement
 import { FaBook, FaUser, FaLock, FaArrowRight } from 'react-icons/fa';
 
+/**
+ * Login Component
+ * 
+ * Renders the login form with username and password fields.
+ * Handles authentication and redirects based on user role.
+ */
 const Login: React.FC = () => {
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Form input state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // UI state
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // ========================================
+  // HOOKS AND CONTEXT
+  // ========================================
+  
+  // Auth context for login function
   const { login } = useAuth();
+  
+  // Navigation hook for redirecting after login
   const navigate = useNavigate();
+  
+  // Location hook for getting the intended destination
   const location = useLocation();
 
+  // Get the original destination (if any) from router state
+  // Default to home page if no previous location
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
+  // ========================================
+  // EVENT HANDLERS
+  // ========================================
+
+  /**
+   * Handles login form submission
+   * Authenticates user and redirects based on role
+   * @param e - Form submit event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
+      // Call login API from auth context
       const user = await login({ username, password });
-      // Redirect admin users to dashboard, customers to their intended page
+      
+      // Redirect based on user role
+      // Admin users go to dashboard, customers to their intended page
       if (user?.role === 'admin') {
         navigate('/admin/dashboard', { replace: true });
       } else {
         navigate(from, { replace: true });
       }
     } catch (err) {
+      // Display error message
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // ========================================
+  // RENDER
+  // ========================================
 
   return (
     <div className="min-vh-100 d-flex align-items-center" style={{
@@ -41,6 +123,7 @@ const Login: React.FC = () => {
       <div className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-5 col-md-7">
+            {/* Logo/Brand Link */}
             <div className="text-center mb-4">
               <Link to="/" className="text-decoration-none d-inline-flex align-items-center">
                 <div style={{
@@ -62,13 +145,16 @@ const Login: React.FC = () => {
               </Link>
             </div>
 
+            {/* Login Card */}
             <div className="card border-0 shadow-lg" style={{ borderRadius: '24px', overflow: 'hidden' }}>
               <div className="card-body p-5">
+                {/* Header */}
                 <div className="text-center mb-4">
                   <h2 className="fw-bold mb-2" style={{ color: '#1e293b' }}>Welcome Back</h2>
                   <p style={{ color: '#64748b' }}>Sign in to continue your reading journey</p>
                 </div>
 
+                {/* Error Alert */}
                 {error && (
                   <div className="alert alert-danger border-0 rounded-3" role="alert" style={{
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -78,7 +164,9 @@ const Login: React.FC = () => {
                   </div>
                 )}
 
+                {/* Login Form */}
                 <form onSubmit={handleSubmit}>
+                  {/* Username Field */}
                   <div className="mb-4">
                     <label htmlFor="username" className="form-label fw-medium" style={{ color: '#475569' }}>
                       Username
@@ -107,6 +195,7 @@ const Login: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Password Field */}
                   <div className="mb-4">
                     <label htmlFor="password" className="form-label fw-medium" style={{ color: '#475569' }}>
                       Password
@@ -135,6 +224,7 @@ const Login: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Submit Button */}
                   <div className="d-grid mt-4">
                     <button
                       type="submit"

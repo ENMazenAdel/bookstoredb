@@ -1,21 +1,116 @@
+/**
+ * ============================================================================
+ * NAVIGATION BAR COMPONENT
+ * ============================================================================
+ * 
+ * Main navigation component displayed at the top of every page.
+ * Provides access to all major sections of the application.
+ * 
+ * FEATURES:
+ * 1. Responsive design with mobile hamburger menu
+ * 2. Role-based navigation links (admin vs customer)
+ * 3. Shopping cart icon with item count badge
+ * 4. User profile dropdown with logout
+ * 5. Active state highlighting for current route
+ * 
+ * NAVIGATION LINKS BY ROLE:
+ * 
+ * PUBLIC (Unauthenticated):
+ * - Home
+ * - Browse Books
+ * - Login / Register
+ * 
+ * CUSTOMER (Authenticated):
+ * - Home
+ * - Browse Books
+ * - Cart (with item count)
+ * - Profile
+ * - Order History
+ * - Logout
+ * 
+ * ADMIN:
+ * - Dashboard
+ * - Books Management
+ * - Orders Management
+ * - Reports
+ * - Browse Books (as customer)
+ * - Cart (can also shop)
+ * - Profile
+ * - Logout
+ * 
+ * STYLING:
+ * - Sticky positioning with blur effect
+ * - Gradient brand logo
+ * - Pill-shaped navigation links
+ * - Animated badge for cart count
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React import
 import React from 'react';
+
+// Router hooks and components for navigation
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+
+// Context hooks for auth and cart state
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+
+// Icons for navigation items
 import { FaShoppingCart, FaUser, FaSignOutAlt, FaBook, FaChartBar, FaBoxes, FaClipboardList, FaTachometerAlt } from 'react-icons/fa';
 
+/**
+ * Navbar Component
+ * 
+ * Renders the main navigation bar with role-based links.
+ * Includes cart icon, user menu, and logout functionality.
+ */
 const Navbar: React.FC = () => {
+  // ========================================
+  // HOOKS AND CONTEXT
+  // ========================================
+  
+  // Auth context for user data and logout
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // Cart context for item count badge
   const { cart } = useCart();
+  
+  // Navigation and location hooks
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ========================================
+  // EVENT HANDLERS
+  // ========================================
+
+  /**
+   * Handles user logout
+   * Logs out user and redirects to login page
+   */
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+
+  /**
+   * Checks if the given path matches the current location
+   * Used for highlighting active navigation links
+   * @param path - Path to check
+   * @returns True if path matches current location
+   */
   const isActive = (path: string) => location.pathname === path;
+
+  // ========================================
+  // RENDER
+  // ========================================
 
   return (
     <nav className="navbar navbar-expand-lg sticky-top" style={{
@@ -24,6 +119,7 @@ const Navbar: React.FC = () => {
       boxShadow: '0 2px 20px rgba(0,0,0,0.08)'
     }}>
       <div className="container">
+        {/* ========== BRAND LOGO ========== */}
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <div style={{
             background: 'linear-gradient(135deg, #f43f5e 0%, #8b5cf6 100%)',
@@ -42,6 +138,7 @@ const Navbar: React.FC = () => {
           }}>BookStore</span>
         </Link>
 
+        {/* Mobile Toggle Button */}
         <button
           className="navbar-toggler border-0"
           type="button"
@@ -51,8 +148,10 @@ const Navbar: React.FC = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
+        {/* ========== NAVIGATION LINKS ========== */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto ms-4">
+            {/* Browse Books - Available to all users */}
             <li className="nav-item">
               <Link
                 className={`nav-link px-3 py-2 rounded-pill mx-1 ${isActive('/books') ? 'active' : ''}`}
@@ -67,8 +166,11 @@ const Navbar: React.FC = () => {
                 Browse Books
               </Link>
             </li>
+            
+            {/* ========== ADMIN-ONLY LINKS ========== */}
             {isAuthenticated && user?.role === 'admin' && (
               <>
+                {/* Dashboard Link */}
                 <li className="nav-item">
                   <Link
                     className={`nav-link px-3 py-2 rounded-pill mx-1 d-flex align-items-center ${isActive('/admin/dashboard') ? 'active' : ''}`}
@@ -83,6 +185,7 @@ const Navbar: React.FC = () => {
                     Dashboard
                   </Link>
                 </li>
+                {/* Books Management Link */}
                 <li className="nav-item">
                   <Link
                     className={`nav-link px-3 py-2 rounded-pill mx-1 d-flex align-items-center ${isActive('/admin/books') ? 'active' : ''}`}

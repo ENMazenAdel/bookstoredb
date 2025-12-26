@@ -1,31 +1,105 @@
+/**
+ * ============================================================================
+ * PUBLISHER ORDER MANAGEMENT PAGE (Admin)
+ * ============================================================================
+ * 
+ * Admin page for managing publisher replenishment orders.
+ * Allows viewing, creating, confirming, and cancelling orders to publishers.
+ * 
+ * FEATURES:
+ * - View all publisher orders with status filtering
+ * - Place new orders to publishers manually
+ * - Confirm pending orders (updates book stock via trigger)
+ * - Cancel pending orders
+ * - View auto-created orders from threshold trigger
+ * 
+ * ORDER LIFECYCLE:
+ * 1. Order is created (manually or by auto-replenish trigger)
+ * 2. Order starts in "Pending" status
+ * 3. Admin confirms order → Stock is added to inventory (trigger)
+ * 4. OR Admin cancels order → No stock change
+ * 
+ * DATABASE TRIGGERS DEMONSTRATED:
+ * - When confirming an order, the ordered quantity is automatically
+ *   added to the book's stock (simulating receiving shipment)
+ * 
+ * ACCESS: Admin users only (protected by ProtectedRoute)
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and lifecycle management
 import React, { useState, useEffect } from 'react';
+
+// Type imports for TypeScript type safety
 import { PublisherOrder, Book } from '../../types';
+
+// API services for order and book operations
 import { ordersApi, booksApi } from '../../services/api';
+
+// Shared UI component for loading state
 import { LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { FaTruck, FaCheck, FaTimes, FaPlus, FaSearch } from 'react-icons/fa';
 
+/**
+ * OrderManagement Component
+ * 
+ * Renders the publisher order management interface with:
+ * - Filter controls by order status
+ * - Orders table with action buttons
+ * - Modal form for placing new orders
+ */
 const OrderManagement: React.FC = () => {
-  const [orders, setOrders] = useState<PublisherOrder[]>([]);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedBook, setSelectedBook] = useState('');
-  const [orderQuantity, setOrderQuantity] = useState(20);
-  const [filterStatus, setFilterStatus] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [processing, setProcessing] = useState<string | null>(null);
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // Data state
+  const [orders, setOrders] = useState<PublisherOrder[]>([]);  // All orders from API
+  const [books, setBooks] = useState<Book[]>([]);              // Books for dropdown
+  
+  // UI state
+  const [isLoading, setIsLoading] = useState(true);            // Initial load state
+  const [showModal, setShowModal] = useState(false);           // Modal visibility
+  
+  // Form state for new order
+  const [selectedBook, setSelectedBook] = useState('');        // Selected book ISBN
+  const [orderQuantity, setOrderQuantity] = useState(20);      // Default order quantity
+  
+  // Filter state
+  const [filterStatus, setFilterStatus] = useState('');        // Status filter
+  
+  // Feedback state
+  const [error, setError] = useState('');                      // Error message
+  const [success, setSuccess] = useState('');                  // Success message
+  const [processing, setProcessing] = useState<string | null>(null); // Currently processing order ID
 
+  // ========================================
+  // DATA LOADING
+  // ========================================
+
+  /**
+   * Effect: Load initial data on component mount
+   */
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * Loads orders and books data from APIs
+   * Sorts orders by date (newest first)
+   */
   const loadData = async () => {
     try {
       const [ordersData, booksData] = await Promise.all([
         ordersApi.getAll(),
         booksApi.getAll()
       ]);
+      // Sort orders by date, newest first
       setOrders(ordersData.sort((a, b) => 
         new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
       ));
@@ -37,10 +111,25 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  // ========================================
+  // FILTERING LOGIC
+  // ========================================
+  
+  /**
+   * Filters orders based on selected status
+   */
   const filteredOrders = orders.filter(order => 
     !filterStatus || order.status === filterStatus
   );
 
+  // ========================================
+  // ACTION HANDLERS
+  // ========================================
+
+  /**
+   * Handles placing a new publisher order
+   * Creates an order for the selected book with specified quantity
+   */
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -50,6 +139,7 @@ const OrderManagement: React.FC = () => {
       await ordersApi.place(selectedBook, orderQuantity);
       setSuccess('Order placed successfully!');
       await loadData();
+      // Reset form and close modal
       setShowModal(false);
       setSelectedBook('');
       setOrderQuantity(20);
@@ -60,11 +150,16 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  /**
+   * Handles confirming a pending order
+   * TRIGGER: This adds the ordered quantity to book stock
+   */
   const handleConfirmOrder = async (orderId: string) => {
     setError('');
     setProcessing(orderId);
 
     try {
+      // Confirming triggers stock update in the API
       await ordersApi.confirm(orderId);
       setSuccess('Order confirmed! Stock has been updated.');
       await loadData();
@@ -75,6 +170,10 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  /**
+   * Handles cancelling a pending order
+   * No stock changes when cancelling
+   */
   const handleCancelOrder = async (orderId: string) => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
     
@@ -92,21 +191,36 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+
+  /**
+   * Returns Bootstrap badge class based on order status
+   */
   const getStatusBadge = (status: string) => {
     const classes: { [key: string]: string } = {
-      'Pending': 'bg-warning text-dark',
-      'Confirmed': 'bg-success',
-      'Cancelled': 'bg-danger'
+      'Pending': 'bg-warning text-dark',   // Yellow for pending
+      'Confirmed': 'bg-success',            // Green for confirmed
+      'Cancelled': 'bg-danger'              // Red for cancelled
     };
     return classes[status] || 'bg-secondary';
   };
+
+  // ========================================
+  // LOADING STATE
+  // ========================================
 
   if (isLoading) {
     return <LoadingSpinner message="Loading orders..." />;
   }
 
+  // ========================================
+  // RENDER
+  // ========================================
   return (
     <div className="container-fluid py-4">
+      {/* Header with title and action button */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>
           <FaTruck className="me-2" />
@@ -118,6 +232,7 @@ const OrderManagement: React.FC = () => {
         </button>
       </div>
 
+      {/* Error/Success alerts */}
       {error && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           {error}
@@ -131,7 +246,7 @@ const OrderManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Filter */}
+      {/* Filter Controls */}
       <div className="card shadow-sm mb-4">
         <div className="card-body">
           <div className="row align-items-center">

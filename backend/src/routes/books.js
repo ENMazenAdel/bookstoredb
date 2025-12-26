@@ -1,7 +1,62 @@
+/**
+ * @fileoverview Books API Routes
+ * 
+ * This module defines REST API endpoints for book inventory management.
+ * Provides CRUD operations for the book catalog.
+ * 
+ * @module routes/books
+ * 
+ * @description
+ * Endpoints:
+ * - GET    /api/books      - Get all books in inventory
+ * - GET    /api/books/:isbn - Get single book by ISBN
+ * - POST   /api/books      - Add new book to inventory
+ * - PUT    /api/books/:isbn - Update existing book
+ * - DELETE /api/books/:isbn - Remove book from inventory
+ * 
+ * Book Schema:
+ * {
+ *   isbn: string,          // ISBN-13 identifier (primary key)
+ *   title: string,         // Book title
+ *   authors: string[],     // Array of author names
+ *   publisher: string,     // Publisher name
+ *   publicationYear: number,
+ *   sellingPrice: number,  // Price in USD
+ *   category: string,      // 'Science', 'Art', 'History', 'Religion', 'Geography'
+ *   quantity: number,      // Current stock level
+ *   threshold: number,     // Minimum stock before reorder
+ *   imageUrl: string       // Book cover image URL
+ * }
+ * 
+ * @requires express
+ */
+
 const express = require('express');
 const router = express.Router();
 
-// Mock data - In production, this would come from a database
+// ============================================
+// MOCK DATA STORE
+// ============================================
+
+/**
+ * In-memory books database.
+ * Contains sample book inventory data. In production, this would be
+ * replaced with a PostgreSQL database connection.
+ * 
+ * Each book has:
+ * - isbn: Unique ISBN-13 identifier
+ * - title: Book title
+ * - authors: Array of author names
+ * - publisher: Publishing company name
+ * - publicationYear: Year of publication
+ * - sellingPrice: Retail price in USD
+ * - category: Classification (Science, Art, History, Religion, Geography)
+ * - quantity: Current copies in stock
+ * - threshold: Minimum stock level (triggers auto-reorder when reached)
+ * - imageUrl: Cover image URL
+ * 
+ * @type {Array<Object>}
+ */
 let books = [
   {
     isbn: '978-0-13-468599-1',
@@ -125,43 +180,108 @@ let books = [
   }
 ];
 
-// GET all books
+// ============================================
+// BOOK ENDPOINTS
+// ============================================
+
+/**
+ * Get all books in inventory.
+ * Returns the complete list of books available in the store.
+ * 
+ * @route GET /api/books
+ * @returns {Array<Object>} Array of all book objects
+ * 
+ * @example
+ * // Response: [{ isbn: "978-...", title: "...", ... }, ...]
+ */
 router.get('/', (req, res) => {
   res.json(books);
 });
 
-// GET book by ISBN
+/**
+ * Get a single book by ISBN.
+ * 
+ * @route GET /api/books/:isbn
+ * @param {string} req.params.isbn - Book's ISBN identifier
+ * @returns {Object} Book object
+ * @returns {Object} Error with 404 status if not found
+ * 
+ * @example
+ * // GET /api/books/978-0-13-468599-1
+ * // Response: { isbn: "978-0-13-468599-1", title: "The Art of...", ... }
+ */
 router.get('/:isbn', (req, res) => {
   const book = books.find(b => b.isbn === req.params.isbn);
+  
   if (!book) {
     return res.status(404).json({ error: 'Book not found' });
   }
+  
   res.json(book);
 });
 
-// POST create new book
+/**
+ * Add a new book to inventory.
+ * Creates a new book entry with the provided data.
+ * 
+ * @route POST /api/books
+ * @param {Object} req.body - Complete book object
+ * @param {string} req.body.isbn - ISBN-13 identifier (required)
+ * @param {string} req.body.title - Book title (required)
+ * @param {string[]} req.body.authors - Array of author names
+ * @param {string} req.body.publisher - Publisher name
+ * @param {number} req.body.publicationYear - Year of publication
+ * @param {number} req.body.sellingPrice - Price in USD
+ * @param {string} req.body.category - Book category
+ * @param {number} req.body.quantity - Initial stock quantity
+ * @param {number} req.body.threshold - Minimum stock threshold
+ * @returns {Object} Created book with 201 status
+ */
 router.post('/', (req, res) => {
   const newBook = req.body;
   books.push(newBook);
   res.status(201).json(newBook);
 });
 
-// PUT update book
+/**
+ * Update an existing book.
+ * Allows partial updates - only provided fields are modified.
+ * 
+ * @route PUT /api/books/:isbn
+ * @param {string} req.params.isbn - Book's ISBN identifier
+ * @param {Object} req.body - Fields to update
+ * @returns {Object} Updated book object
+ * @returns {Object} Error with 404 status if not found
+ */
 router.put('/:isbn', (req, res) => {
   const index = books.findIndex(b => b.isbn === req.params.isbn);
+  
   if (index === -1) {
     return res.status(404).json({ error: 'Book not found' });
   }
+  
+  // Merge existing book with updates using spread operator
   books[index] = { ...books[index], ...req.body };
   res.json(books[index]);
 });
 
-// DELETE book
+/**
+ * Delete a book from inventory.
+ * Permanently removes the book from the database.
+ * 
+ * @route DELETE /api/books/:isbn
+ * @param {string} req.params.isbn - Book's ISBN identifier
+ * @returns {void} 204 No Content on success
+ * @returns {Object} Error with 404 status if not found
+ */
 router.delete('/:isbn', (req, res) => {
   const index = books.findIndex(b => b.isbn === req.params.isbn);
+  
   if (index === -1) {
     return res.status(404).json({ error: 'Book not found' });
   }
+  
+  // Remove book from array
   books.splice(index, 1);
   res.status(204).send();
 });

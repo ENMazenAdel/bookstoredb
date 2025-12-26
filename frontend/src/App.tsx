@@ -1,3 +1,39 @@
+/**
+ * @fileoverview Main Application Component
+ * 
+ * This is the root component of the Bookstore React application.
+ * It sets up the application structure including:
+ * - Context providers (Auth, Cart)
+ * - React Router configuration
+ * - Route definitions with role-based protection
+ * - Layout structure (Navbar, Main content, Footer)
+ * 
+ * @module App
+ * 
+ * @description
+ * Route Structure:
+ * 
+ * PUBLIC ROUTES (accessible to all):
+ * - / : Home page with featured books and categories
+ * - /books : Browse all books with filtering
+ * - /login : User authentication
+ * - /register : New user registration
+ * 
+ * CUSTOMER ROUTES (requires 'customer' role):
+ * - /cart : Shopping cart with checkout
+ * - /orders : Order history
+ * - /profile/edit : Edit profile information
+ * 
+ * SHARED PROTECTED ROUTES (any authenticated user):
+ * - /profile : View profile information
+ * 
+ * ADMIN ROUTES (requires 'admin' role):
+ * - /admin/dashboard : Business metrics overview
+ * - /admin/books : Book inventory management (CRUD)
+ * - /admin/orders : Publisher order management
+ * - /admin/reports : Sales and analytics reports
+ */
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -12,11 +48,13 @@ import { Home, BrowseBooks, Cart, OrderHistory, Profile, EditProfile } from './p
 // Admin pages
 import { Dashboard, BookManagement, OrderManagement, Reports } from './pages/admin';
 
+// Bootstrap CSS and JS for styling and interactive components
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
 
 // Get the base URL for GitHub Pages deployment
+// This ensures routes work correctly when deployed to a subdirectory
 const basename = import.meta.env.BASE_URL;
 
 function App() {

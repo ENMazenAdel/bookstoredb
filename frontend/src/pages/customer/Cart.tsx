@@ -1,21 +1,97 @@
+/**
+ * ============================================================================
+ * SHOPPING CART PAGE (Customer)
+ * ============================================================================
+ * 
+ * Page for viewing and managing the shopping cart.
+ * Allows customers to review items before checkout.
+ * 
+ * FEATURES:
+ * 1. View all items in cart with images and details
+ * 2. Adjust quantity of each item
+ * 3. Remove items from cart
+ * 4. View order summary with totals
+ * 5. Secure checkout with credit card form
+ * 
+ * QUANTITY CONTROLS:
+ * - Minimum quantity: 1 (can't go below)
+ * - Maximum quantity: available stock
+ * - Decrement/increment buttons with validation
+ * 
+ * CHECKOUT FLOW:
+ * 1. Click "Proceed to Checkout"
+ * 2. Enter credit card details (demo - not real)
+ * 3. Submit to complete purchase
+ * 4. Redirect to order history on success
+ * 
+ * ACCESS: Authenticated customers only
+ * 
+ * @author Bookstore Development Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// React imports for component and state management
 import React, { useState } from 'react';
+
+// Router hook for navigation after checkout
 import { useNavigate } from 'react-router-dom';
+
+// Cart context for all cart operations
 import { useCart } from '../../context/CartContext';
+
+// Loading spinner component
 import { LoadingSpinner } from '../../components';
+
+// Icons for visual enhancement
 import { FaTrash, FaMinus, FaPlus, FaShoppingCart, FaCreditCard, FaLock, FaArrowRight } from 'react-icons/fa';
 
+/**
+ * Cart Component
+ * 
+ * Displays the shopping cart with items, totals, and checkout form.
+ * Handles quantity updates, item removal, and checkout process.
+ */
 const Cart: React.FC = () => {
+  // ========================================
+  // HOOKS AND CONTEXT
+  // ========================================
+  
+  // Cart context with all cart state and operations
   const { cart, isLoading, updateQuantity, removeFromCart, checkout } = useCart();
+  
+  // Navigation for redirecting after checkout
   const navigate = useNavigate();
+
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
+  
+  // UI state for checkout form visibility
   const [showCheckout, setShowCheckout] = useState(false);
+  
+  // Checkout form data - credit card details (demo only)
   const [checkoutData, setCheckoutData] = useState({
     creditCardNumber: '',
     expiryDate: '',
     cvv: ''
   });
+  
+  // Error message state
   const [error, setError] = useState('');
+  
+  // Processing state for checkout button
   const [processing, setProcessing] = useState(false);
 
+  // ========================================
+  // EVENT HANDLERS
+  // ========================================
+
+  /**
+   * Updates the quantity of an item in the cart
+   * @param isbn - Book ISBN to update
+   * @param newQuantity - New quantity value
+   */
   const handleQuantityChange = async (isbn: string, newQuantity: number) => {
     try {
       await updateQuantity(isbn, newQuantity);
@@ -24,6 +100,10 @@ const Cart: React.FC = () => {
     }
   };
 
+  /**
+   * Removes an item from the cart
+   * @param isbn - Book ISBN to remove
+   */
   const handleRemove = async (isbn: string) => {
     try {
       await removeFromCart(isbn);
@@ -32,13 +112,20 @@ const Cart: React.FC = () => {
     }
   };
 
+  /**
+   * Handles checkout form submission
+   * Validates payment info and creates order
+   * @param e - Form submit event
+   */
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setProcessing(true);
 
     try {
+      // Call checkout API with payment data
       const order = await checkout(checkoutData);
+      // Redirect to order history with the new order
       navigate('/orders', { state: { newOrder: order } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
@@ -47,15 +134,22 @@ const Cart: React.FC = () => {
     }
   };
 
+  // ========================================
+  // RENDER
+  // ========================================
+
+  // Show loading spinner while cart is being fetched
   if (isLoading && cart.items.length === 0) {
     return <LoadingSpinner message="Loading cart..." />;
   }
 
+  // ========== EMPTY CART STATE ==========
   if (cart.items.length === 0) {
     return (
       <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
         <div className="container py-5">
           <div className="text-center py-5">
+            {/* Empty cart icon */}
             <div style={{
               width: '120px',
               height: '120px',
@@ -72,6 +166,7 @@ const Cart: React.FC = () => {
             <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto 2rem' }}>
               Looks like you haven't added any books yet. Start exploring our collection!
             </p>
+            {/* Button to browse books */}
             <button
               className="btn btn-lg px-5 py-3 text-white fw-semibold"
               onClick={() => navigate('/books')}
@@ -90,9 +185,11 @@ const Cart: React.FC = () => {
     );
   }
 
+  // ========== CART WITH ITEMS ==========
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <div className="container py-5">
+        {/* Page Header */}
         <h2 className="mb-4 fw-bold d-flex align-items-center" style={{ color: '#1e293b' }}>
           <div style={{
             width: '48px',
@@ -109,6 +206,7 @@ const Cart: React.FC = () => {
           Shopping Cart
         </h2>
 
+        {/* Error Alert */}
         {error && (
           <div className="alert alert-danger border-0 rounded-3 alert-dismissible fade show" role="alert" style={{
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -120,15 +218,17 @@ const Cart: React.FC = () => {
         )}
 
         <div className="row">
-          {/* Cart Items */}
+          {/* ========== CART ITEMS LIST ========== */}
           <div className="col-lg-8 mb-4">
             <div className="card border-0 shadow-sm" style={{ borderRadius: '20px' }}>
               <div className="card-body p-4">
+                {/* Map through cart items */}
                 {cart.items.map((item, index) => (
                   <div
                     key={item.book.isbn}
                     className={`row align-items-center py-4 ${index !== cart.items.length - 1 ? 'border-bottom' : ''}`}
                   >
+                    {/* Book Image */}
                     <div className="col-auto">
                       <img
                         src={item.book.imageUrl || `https://via.placeholder.com/100x130/6366f1/ffffff?text=Book`}
@@ -136,6 +236,7 @@ const Cart: React.FC = () => {
                         style={{ width: '100px', height: '130px', objectFit: 'cover', borderRadius: '12px' }}
                       />
                     </div>
+                    {/* Book Details */}
                     <div className="col">
                       <h6 className="mb-1 fw-bold" style={{ color: '#1e293b' }}>{item.book.title}</h6>
                       <p className="small mb-2" style={{ color: '#64748b' }}>{item.book.authors.join(', ')}</p>
@@ -143,8 +244,10 @@ const Cart: React.FC = () => {
                         ${item.book.sellingPrice.toFixed(2)}
                       </p>
                     </div>
+                    {/* Quantity Controls */}
                     <div className="col-auto">
                       <div className="d-flex align-items-center gap-2 p-2 rounded-3" style={{ backgroundColor: '#f1f5f9' }}>
+                        {/* Decrement button - disabled at quantity 1 */}
                         <button
                           className="btn btn-sm border-0"
                           onClick={() => handleQuantityChange(item.book.isbn, item.quantity - 1)}
