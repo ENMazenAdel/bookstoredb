@@ -144,7 +144,7 @@ erDiagram
 
     CARTS ||--|{ CART_ITEMS : contains
     CARTS {
-        int user_id PK_FK
+        int user_id PK
         timestamp updated_at
     }
 
