@@ -4,12 +4,11 @@
 **Program:** Computer and Communications (Fall 2025)
 
 ## 1. Group Members
-*Please fill in your group members here:*
-1.  [Student Name] - [Role/Contribution]
-2.  [Student Name] - [Role/Contribution]
-3.  [Student Name] - [Role/Contribution]
-4.  [Student Name] - [Role/Contribution]
 
+1.  Mazen adel           - 8634
+2.  Mazen Bassem         - 9021
+3.  Ahmed Mahrous        - 8974
+4.  Abdelrahman Mahgoub  - 9041
 ---
 
 ## 2. Implemented Features
