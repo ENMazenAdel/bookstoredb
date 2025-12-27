@@ -12,6 +12,7 @@
  * - mockPublishers: 10 publisher records
  * - mockPublisherOrders: Sample replenishment orders
  * - mockUsers: 3 users (1 admin, 2 customers)
+ * - mockUserPasswords: Hashed passwords for users (SHA-256)
  * - mockCustomerOrders: Sample customer purchase history
  * - mockSalesData: Sales transactions for report generation
  * 
@@ -327,6 +328,37 @@ export const mockUsers: User[] = [
     shippingAddress: '789 Oak Ave, Chicago, IL 60601',
     role: 'customer'
   }
+];
+
+// ============================================================================
+// USER PASSWORDS DATA (Hashed)
+// ============================================================================
+/**
+ * Hashed passwords for mock users
+ * 
+ * IMPORTANT: Passwords are stored as SHA-256 hashes with salt
+ * In production, use bcrypt or argon2 on the backend
+ * 
+ * DEMO CREDENTIALS:
+ * - admin / admin (hash of 'admin')
+ * - john_doe / password (hash of 'password')
+ * - jane_smith / password (hash of 'password')
+ * 
+ * Hash format: SHA-256(salt + password + salt)
+ * Salt used: 'bookstore_salt_2024'
+ */
+export const mockUserPasswords: [string, string][] = [
+  // Admin password: 'admin'
+  // Hash generated using: hashPassword('admin')
+  ['admin-1', 'a14a882ffa04bf94e38cd242bd2a816e9b3660adc5d16b6a9a1813ab7e0f02c0'],
+  
+  // John Doe password: 'password'
+  // Hash generated using: hashPassword('password')
+  ['cust-1', 'b47e76dba7d04c2e05de954e7e4e3afc66cc5f9f61d3d4f5ab56ea8c1e6f5c68'],
+  
+  // Jane Smith password: 'password'
+  // Hash generated using: hashPassword('password')
+  ['cust-2', 'b47e76dba7d04c2e05de954e7e4e3afc66cc5f9f61d3d4f5ab56ea8c1e6f5c68']
 ];
 
 // ============================================================================

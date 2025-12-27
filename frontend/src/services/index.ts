@@ -15,3 +15,6 @@ export * from './api';
 
 /** Mock data for development: mockBooks, mockPublishers, mockUsers, mockOrders, etc. */
 export * from './mockData';
+
+/** Password hashing utilities: hashPassword, verifyPassword */
+export * from './passwordHash';

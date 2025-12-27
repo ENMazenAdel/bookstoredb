@@ -61,9 +61,13 @@ import {
   mockPublishers,      // 10 sample publisher records
   mockPublisherOrders, // Sample publisher order records
   mockUsers,           // 3 sample users (1 admin, 2 customers)
+  mockUserPasswords,   // Hashed passwords for users
   mockCustomerOrders,  // Sample customer order history
   mockSalesData        // Sales transaction data for reports
 } from './mockData';
+
+// Import password hashing utilities
+import { hashPassword, verifyPassword } from './passwordHash';
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -89,6 +93,7 @@ let books = [...mockBooks];                    // Books "table" - inventory
 let publishers = [...mockPublishers];          // Publishers "table"
 let publisherOrders = [...mockPublisherOrders]; // Publisher orders "table"
 let users = [...mockUsers];                    // Users "table" - accounts
+let userPasswords = new Map(mockUserPasswords); // User passwords "table" - hashed passwords
 let customerOrders = [...mockCustomerOrders];  // Customer orders "table"
 
 // ============================================================================
@@ -192,24 +197,30 @@ export const authApi = {
   login: async (credentials: LoginCredentials): Promise<User> => {
     await delay(500); // Simulate network latency
     
-    // Special case: Admin login with admin/admin credentials
-    if (credentials.username === 'admin' && credentials.password === 'admin') {
-      const adminUser = users.find(u => u.role === 'admin')!;
-      currentUserId = adminUser.id; // Set current user for cart operations
-      return adminUser;
-    }
-    
-    // Regular user login: find user by username
+    // Find user by username
     const user = users.find(u => u.username === credentials.username);
     
-    // Validate password (demo: all users have password "password")
-    if (user && credentials.password === 'password') {
-      currentUserId = user.id; // Set current user for cart operations
-      return user;
+    if (!user) {
+      throw new Error('Invalid username or password');
     }
     
-    // Authentication failed
-    throw new Error('Invalid username or password');
+    // Get stored hashed password for this user
+    const storedHash = userPasswords.get(user.id);
+    
+    if (!storedHash) {
+      throw new Error('Invalid username or password');
+    }
+    
+    // Verify password using hash comparison
+    const isValidPassword = await verifyPassword(credentials.password, storedHash);
+    
+    if (!isValidPassword) {
+      throw new Error('Invalid username or password');
+    }
+    
+    // Password verified - set current user for cart operations
+    currentUserId = user.id;
+    return user;
   },
 
   /**
@@ -256,8 +267,14 @@ export const authApi = {
       role: 'customer'                  // New registrations are always customers
     };
     
+    // Hash the password before storing
+    const hashedPassword = await hashPassword(data.password);
+    
     // Add to users "table"
     users.push(newUser);
+    
+    // Store hashed password in passwords "table"
+    userPasswords.set(newUser.id, hashedPassword);
     
     // Auto-login the new user
     currentUserId = newUser.id;
