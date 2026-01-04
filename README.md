@@ -2,7 +2,7 @@
 
 > A full-stack online bookstore application built with React, TypeScript, and Express.js
 
-[![Live Demo](https://img.shields.io/badge/demo-live-green?style=for-the-badge)](https://enmazenadel.github.io/bookstoredb/)
+[![Live Demo](https://img.shields.io/badge/demo-live-green?style=for-the-badge)](https://enmazenadel.github.io/Book-Store-Store/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=flat-square&logo=bootstrap)](https://getbootstrap.com/)
