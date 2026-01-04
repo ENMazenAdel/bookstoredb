@@ -5,17 +5,6 @@
 
 ---
 
-## Team Members
-
-| Name | ID |
-|------|-----|
-| Mazen Adel | 8634 |
-| Mazen Bassem | 9021 |
-| Ahmed Mahrous | 8974 |
-| Abdelrahman Mahgoub | 9041 |
-
----
-
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
