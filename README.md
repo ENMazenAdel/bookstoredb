@@ -93,17 +93,6 @@ For complete project documentation including ERD, database schema, triggers, and
 
 ---
 
-## 👥 Team
-
-| Name | ID |
-|------|-----|
-| Mazen Adel | 8634 |
-| Mazen Bassem | 9021 |
-| Ahmed Mahrous | 8974 |
-| Abdelrahman Mahgoub | 9041 |
-
----
-
 ## 📄 License
 
 This project is for educational purposes — Database Systems Course (Fall 2025).
