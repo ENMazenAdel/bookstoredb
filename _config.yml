@@ -1,0 +1,15 @@
+# Jekyll configuration for GitHub Pages
+# Exclude node_modules and other non-essential directories from Jekyll processing
+
+exclude:
+  - node_modules/
+  - frontend/node_modules/
+  - backend/node_modules/
+  - vendor/
+  - .git/
+  - .gitignore
+  - package.json
+  - package-lock.json
+  - "*.lock"
+  - Gemfile
+  - Gemfile.lock
